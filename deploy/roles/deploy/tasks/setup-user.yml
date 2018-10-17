@@ -1,0 +1,4 @@
+- user:
+    name: '{{app_user}}'
+    system: yes
+  name: create leihs-legacy user

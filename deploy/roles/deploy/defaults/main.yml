@@ -1,0 +1,4 @@
+app_name: leihs-zhdk-agw-auth
+app_dir: /{{app_name}}
+app_ruby_version: 2.5.3
+app_user: '{{app_name}}'

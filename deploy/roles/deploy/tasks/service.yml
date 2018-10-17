@@ -1,0 +1,29 @@
+- template:
+    src: '{{app_name}}.service'
+    dest: /etc/systemd/system/{{app_name}}.service
+    mode: 0644
+  name: copy {{app_name}}.service
+
+- command: systemctl daemon-reload
+  changed_when: false
+  name: reload systemctl
+
+- name: install config template
+  template: 
+    src: config.yml
+    dest: '{{app_dir}}/zhdk_agw_auth/config.yml'
+  tags:
+    - config
+
+- name: restart {{app_name}}.service
+  service:
+    name: '{{app_name}}.service'
+    state: restarted
+    enabled: yes
+
+- name: wait for {{app_name}}.service
+  wait_for:
+    host: localhost
+    port: 3333
+    timeout: 60
+

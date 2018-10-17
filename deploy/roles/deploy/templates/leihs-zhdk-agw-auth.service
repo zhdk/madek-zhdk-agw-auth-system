@@ -1,0 +1,14 @@
+[Unit]
+Description={{app_name}} Service
+After=syslog.target
+
+[Service]
+WorkingDirectory={{app_dir}}/zhdk_agw_auth
+User={{app_user}}
+Group={{app_user}}
+Environment=PATH=/home/{{app_user}}/.rubies/ruby-{{app_ruby_version}}/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/home/{{app_user}}/.rubies/ruby-{{app_ruby_version}}/bin/ruby -S \
+    bundle exec ruby zhdk-agw-auth-system.rb -c {{app_dir}}/zhdk_agw_auth/config.yml
+
+[Install]
+WantedBy=multi-user.target

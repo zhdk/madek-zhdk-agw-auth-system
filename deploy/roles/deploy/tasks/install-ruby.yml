@@ -1,0 +1,21 @@
+- shell: |
+    #!/bin/bash
+    set eux
+    ruby-install --no-install-deps --no-reinstall ruby {{app_ruby_version}}
+  become: yes
+  become_user: '{{app_user}}'
+  become_method: sudo
+  name: install ruby
+
+- shell: |
+    #!/bin/bash
+    set eux
+    export PATH=$HOME/.rubies/ruby-{{app_ruby_version}}/bin:$PATH
+    which gem
+    gem install bundler
+    cd {{app_dir}}/zhdk_agw_auth
+    bundle install
+  become: yes
+  become_user: '{{app_user}}'
+  become_method: sudo
+  name: install bundler and bundle

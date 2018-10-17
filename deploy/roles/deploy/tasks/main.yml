@@ -1,0 +1,4 @@
+- include_tasks: setup-user.yml
+- include_tasks: install-project.yml
+- include_tasks: install-ruby.yml
+- include_tasks: service.yml

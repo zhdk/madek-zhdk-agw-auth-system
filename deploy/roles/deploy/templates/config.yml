@@ -1,0 +1,20 @@
+my_port: {{agw_auth_port}}
+
+my_external_base_url: '{{agw_auth_external_base_url}}'
+
+my_private_key: |
+  {{agw_auth_my_private_key | indent(2)}}
+
+my_public_key: |
+  {{agw_auth_my_public_key | indent(2)}}
+
+leihs_public_key: |
+  {{agw_auth_leihs_public_key | indent(2)}}
+
+agw_base_url: https://intern.zhdk.ch/?auth/
+
+agw_app_id: '{{agw_app_id}}' 
+
+agw_app_secret: '{{agw_app_secret}}'
+
+
