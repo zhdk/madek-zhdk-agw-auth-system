@@ -20,7 +20,7 @@ $logger.level = Logger::WARN
 ################################################################################
  
 options = OpenStruct.new
-options.config_file = Pathname.new("dev/config.yml")
+# options.config_file = Pathname.new("dev/config.yml")
 OptionParser.new do |opts|
   opts.banner = "Usage: zhdk-agw-auth-system.rb [options]"
 

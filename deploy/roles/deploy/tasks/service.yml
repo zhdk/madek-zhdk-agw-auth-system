@@ -12,8 +12,6 @@
   template: 
     src: config.yml
     dest: '{{app_dir}}/zhdk_agw_auth/config.yml'
-  tags:
-    - config
 
 - name: restart {{app_name}}.service
   service:
