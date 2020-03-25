@@ -103,7 +103,6 @@ class AuthenticatorApp <  Sinatra::Base
       }, $config[:my_private_key], 'ES256')
 
       url = $config[:agw_base_url] + $config[:agw_app_id] \
-        + '&delogin=1' \
         + (login ? "&vusername=#{CGI::escape(login)}" : "") \
         + '&url_postlogin=' \
         + CGI::escape("#{$config[:my_external_base_url]}/zhdk-agw/callback?" \
