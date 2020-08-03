@@ -1,0 +1,11 @@
+name: LEIHS/zhdk-agw-auth-system
+windows:
+  2:
+    name: app
+    command: |
+      bundle exec rerun 'bundle exec ruby zhdk-agw-auth-system.rb'
+  5:
+    name: deploy
+    command: |
+      # ansible-playbook -i ../leihs_v5/zhdk-inventory/staging-hosts -l zhdk-leihs-staging deploy/deploy_play.yml --ssh-common-args '-o ProxyCommand="ssh -W %h:%p -q root@ci-gw.zhdk.ch"'
+      # ansible-playbook -i ../leihs_v5/zhdk-inventory/prod-hosts-v5 deploy/deploy_play.yml --ssh-common-args '-o ProxyCommand="ssh -W %h:%p -q root@ci-gw.zhdk.ch"'
