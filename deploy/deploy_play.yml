@@ -1,6 +1,6 @@
 - hosts: leihs_server
 
-  roles: 
+  roles:
 
   - role: deploy
 

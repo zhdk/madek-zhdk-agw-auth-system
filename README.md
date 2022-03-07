@@ -10,49 +10,20 @@ Links
 Deploy
 ------
 
-### Python Environment
+For the following scripts:
 
-#### Using the Deployment-Environment
+* the ZHdK leihs-inventory must be reachable via `../leihs/zhdk-inventory` from this directory
+* a python 3.x version must be in the path as `python3`
 
-Before calling `ansible` etc:
+### Prepared deploy scripts
 
-```
-source py-venv/bin/activate
-```
+    ./bin/deploy2staging
 
-
-#### Installing a Deployment-Environment
-
-We recommend to install a compatible `ansible` version as follows:
-
-```
-python3 -m venv py-venv
-source py-venv/bin/activate
-pip install -r deploy/requirements.txt
-```
-
-This requires Python 3.7 or later.
-
-#### Upgrading `ansible` from scratch
-
-```
-python3 -m venv py-venv
-source py-venv/bin/activate
-pip install ansible
-pip freeze > requirements.txt
-```
+    ./bin/deploy2test
 
 
+### Manual example
 
-### Staging aka.staging.leihs.zhdk.ch
-
-    cd deploy
+    source ./tmp/py-venv/bin/activate
     ansible-playbook -i ../../zhdk-inventory/staging-hosts deploy_play.yml -l zhdk-leihs-staging
-
-
-    cd deploy
-    ansible-playbook -i ../../zhdk-inventory/developer-hosts -l tom deploy_play.yml
-
-
-
 

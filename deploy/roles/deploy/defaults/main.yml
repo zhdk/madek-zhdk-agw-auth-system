@@ -1,4 +1,4 @@
 app_name: zhdk-leihs-agw-auth
 app_dir: /{{app_name}}
-app_ruby_version: 2.7.2
+app_ruby_version: 2.7.5
 app_user: '{{app_name}}'
