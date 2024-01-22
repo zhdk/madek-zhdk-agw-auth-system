@@ -1,4 +1,4 @@
-- hosts: leihs_server
+- hosts: all
 
   roles:
 

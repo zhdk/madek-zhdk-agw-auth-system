@@ -1,21 +1,32 @@
-- shell: |
-    #!/bin/bash
-    set eux
-    ruby-install --no-install-deps --no-reinstall ruby {{app_ruby_version}}
+- name: install ruby
+  shell: |
+    #!/usr/bin/env bash
+    set -euo pipefail
+    source {{asdf_root_dir}}/current/asdf.sh
+    if [[ ! -d ~/.asdf/plugins/ruby ]]; then
+      asdf plugin add ruby https://github.com/asdf-vm/asdf-ruby.git
+    else
+      asdf plugin update ruby
+    fi
+    cd {{app_dir}}
+    asdf install ruby
+  args:
+      executable: /bin/bash
   become: yes
   become_user: '{{app_user}}'
   become_method: sudo
-  name: install ruby
+  async: 3600
+  poll: 10
 
-- shell: |
-    #!/bin/bash
-    set eux
-    export PATH=$HOME/.rubies/ruby-{{app_ruby_version}}/bin:$PATH
-    which gem
-    gem install bundler
-    cd {{app_dir}}/zhdk_agw_auth
+- name: bundle ruby gems
+  shell: |
+    #!/usr/bin/env bash
+    set -euo pipefail
+    source {{asdf_root_dir}}/current/asdf.sh
+    cd {{app_dir}}
     bundle install
+  args:
+      executable: /bin/bash
   become: yes
   become_user: '{{app_user}}'
   become_method: sudo
-  name: install bundler and bundle

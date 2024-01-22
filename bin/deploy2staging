@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd .. > /dev/null 2>&1 && pwd -P)"
-
-cd $PROJECT_DIR
-./bin/virtualenv-install
-source $PROJECT_DIR/tmp/py-venv/bin/activate
-
-ansible-playbook -i ${PROJECT_DIR}/../leihs/zhdk-inventory/staging-hosts deploy/deploy_play.yml

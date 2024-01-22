@@ -1,5 +1,28 @@
+- name: register ruby version
+  shell: |
+    #!/usr/bin/env bash
+    set -euo pipefail
+    source {{asdf_root_dir}}/current/asdf.sh
+    cd {{app_dir}}
+    asdf current ruby | awk '{print $2}'
+  args:
+    chdir: "{{app_dir}}"
+  args:
+    executable: /bin/bash
+  become: yes
+  become_user: "{{app_user}}"
+  become_method: sudo
+  register: ruby_version
+
+
+- name: make sure `/etc/madek/' exists
+  file:
+    path: /etc/madek
+    state: directory
+    mode: '0755'
+
 - template:
-    src: '{{app_name}}.service'
+    src: zhdk-madek-agw-auth.service
     dest: /etc/systemd/system/{{app_name}}.service
     mode: 0644
   name: copy {{app_name}}.service
@@ -9,9 +32,12 @@
   name: reload systemctl
 
 - name: install config template
-  template: 
+  template:
     src: config.yml
-    dest: '{{app_dir}}/zhdk_agw_auth/config.yml'
+    dest: /etc/madek/{{app_name}}_config.yml
+    mode: '0640'
+    owner: root
+    group: '{{app_user}}'
 
 - name: restart {{app_name}}.service
   service:
@@ -22,6 +48,6 @@
 - name: wait for {{app_name}}.service
   wait_for:
     host: localhost
-    port: 3333
-    timeout: 60
+    port: '{{app_port}}'
+    timeout: 10
 

@@ -10,7 +10,10 @@ require 'yaml'
 require 'logger'
 
 $logger = Logger.new(STDOUT)
-$logger.level = Logger::WARN
+$logger.level = Logger::DEBUG
+$logger.formatter = proc do |severity, datetime, progname, msg|
+  "#{datetime.strftime('%Y-%m-%d %H:%M:%S')} - #{severity}: #{msg}\n\n"
+end
 
 # require 'pry'
 # require 'rerun'
@@ -18,7 +21,7 @@ $logger.level = Logger::WARN
 ################################################################################
 ### options and config #########################################################
 ################################################################################
- 
+
 options = OpenStruct.new
 # options.config_file = Pathname.new("dev/config.yml")
 OptionParser.new do |opts|
@@ -36,17 +39,18 @@ $config = {
 ).tap do |c|
   c[:my_private_key] = OpenSSL::PKey.read(c[:my_private_key])
   c[:my_public_key] = OpenSSL::PKey.read(c[:my_public_key])
-  c[:leihs_public_key] = OpenSSL::PKey.read(c[:leihs_public_key])
+  c[:madek_public_key] = OpenSSL::PKey.read(c[:madek_public_key])
 end
 
- 
+$logger.info($config)
+
 ################################################################################
 ### the web app ################################################################
 ################################################################################
 
 class AuthenticatorApp <  Sinatra::Base
 
-  set :environment, :production
+  set :environment, :development
 
   get '/zhdk-agw/status' do
     'OK'
@@ -56,8 +60,8 @@ class AuthenticatorApp <  Sinatra::Base
   ### error handling and error messages ########################################
 
   def expired_message sign_in_request_token
-    sign_in_request = JWT.decode sign_in_request_token, 
-      $config[:leihs_public_key], false, { algorithm: 'ES256' }
+    sign_in_request = JWT.decode sign_in_request_token,
+      $config[:madek_public_key], false, { algorithm: 'ES256' }
 
     <<-HTML.strip_heredoc
         <html>
@@ -76,9 +80,9 @@ class AuthenticatorApp <  Sinatra::Base
         <html>
           <head></head>
           <body>
-            <h1> Unspecified Error in leihs-AGW Authentication Service </h1>
+            <h1> Unspecified Error in madek-AGW Authentication Service </h1>
             <p> Please try again. </p>
-            <p> Contact your leihs administrator if this problem occurs again. </p>
+            <p> Contact your madek administrator if this problem occurs again. </p>
           </body>
         </html>
     HTML
@@ -86,16 +90,18 @@ class AuthenticatorApp <  Sinatra::Base
 
 
   ### sign-in ##################################################################
-  
+
 
   get '/zhdk-agw/sign-in' do
 
-    begin 
+    begin
 
       sign_in_request_token = params[:token]
-      sign_in_request = JWT.decode sign_in_request_token, 
-        $config[:leihs_public_key], true, { algorithm: 'ES256' }
-      login = sign_in_request.first["login"].presence
+      sign_in_request = JWT.decode sign_in_request_token,
+        $config[:madek_public_key], true, { algorithm: 'ES256' }
+      agw_username = sign_in_request.first["email-or-login"].presence
+
+      $logger.info({sign_in_request: sign_in_request})
 
       token = JWT.encode({
         sign_in_request_token: sign_in_request_token
@@ -103,11 +109,11 @@ class AuthenticatorApp <  Sinatra::Base
       }, $config[:my_private_key], 'ES256')
 
       url = $config[:agw_base_url] + $config[:agw_app_id] \
-        + (login ? "&vusername=#{CGI::escape(login)}" : "") \
+        + (agw_username ? "&vusername=#{CGI::escape(agw_username)}" : "") \
         + '&url_postlogin=' \
         + CGI::escape("#{$config[:my_external_base_url]}/zhdk-agw/callback?" \
                       "token=#{token}" \
-                      "&agw_session_id=%s") 
+                      "&agw_session_id=%s")
 
       redirect url
 
@@ -125,16 +131,20 @@ class AuthenticatorApp <  Sinatra::Base
 
   get '/zhdk-agw/callback' do
 
-    begin 
+    begin
 
-      token_data = JWT.decode(params[:token], 
+      token_data = JWT.decode(params[:token],
                               $config[:my_public_key], true, { algorithm: 'ES256'}) \
         .first.with_indifferent_access
 
       sign_in_request_token = token_data[:sign_in_request_token]
 
-      sign_in_request = JWT.decode sign_in_request_token, 
-        $config[:leihs_public_key], true, { algorithm: 'ES256' }
+      sign_in_request = JWT.decode sign_in_request_token,
+        $config[:madek_public_key], true, { algorithm: 'ES256' }
+
+      sign_in_request = sign_in_request.first
+
+      $logger.debug sign_in_request: sign_in_request
 
       agw_session_id = params[:agw_session_id]
 
@@ -145,15 +155,37 @@ class AuthenticatorApp <  Sinatra::Base
 
       resp = RestClient.get(url)
 
+      $logger.debug({BODY: resp.body})
+
       person = Hash.from_xml(resp.body).with_indifferent_access[:authresponse][:person]
 
-      token = JWT.encode({
-        sign_in_request_token: sign_in_request_token,
-        org_id: person[:id],
-        success: true}, $config[:my_private_key], 'ES256')
+      $logger.debug({PERSON: person})
 
-      url = sign_in_request.first["server_base_url"] \
-        + sign_in_request.first['path'] + "?token=#{token}"
+      groups = person[:memberof][:group].map{|group|
+        $logger.debug({group: group}) && group
+      }.map{|g| g.gsub('zhdk/', '')
+      }.map{|g| {institutional_name: g}
+      }.each{|g| $logger.debug(g)}
+
+      groups << {id: 'efbfca9f-4191-5d27-8c94-618be5a125f5', type: 'AuthenticationGroup'}
+
+      token_payload = {
+        sign_in_request_token: sign_in_request_token,
+        'email-or-login': (person[:email].presence || person[:local_username].presence),
+        'account': {
+          'email': person[:email],
+          'first_name': person[:firstname],
+          'id': person[:id],
+          'last_name': person[:lastname],
+          'login': person[:local_username],
+          'groups': groups,},
+        success: true }
+
+      $logger.debug({TOKEN_PAYLOAD: token_payload})
+
+      token = JWT.encode(token_payload, $config[:my_private_key], 'ES256')
+
+      url = sign_in_request['sign-in-url'] + "?token=#{token}"
 
       redirect url
 

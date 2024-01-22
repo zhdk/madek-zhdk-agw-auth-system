@@ -1,38 +1,23 @@
-- file:
-    path: '{{playbook_dir}}/tmp/zhdk_agw_auth.tar.gz'
-    state: absent
-  delegate_to: localhost
-  name: remove possibly exisiting archive
-
-- shell: |
-    #!/bin/bash
-    set -eux
-    DEPLOY_DIR='{{playbook_dir}}'
-    cd $DEPLOY_DIR/..
-    $DEPLOY_DIR/bin/git-archive-all -v $DEPLOY_DIR/tmp/zhdk_agw_auth.tar.gz
-  delegate_to: localhost
-  name: create archive
-
-- file:
+- name: remove existing {{app_dir}}
+  file:
     path: '{{app_dir}}'
     state: absent
-  name: remove existing {{app_dir}}
 
-- file:
+- name: create empty '{{app_dir}}'
+  file:
     path: '{{app_dir}}'
     state: directory
     owner: '{{app_user}}'
     recurse: yes
-  name: create empty '{{app_dir}}'
 
-- file:
-    path: /tmp/zhdk_agw_auth.tar.gz
-    state: absent
-  name: remove existing archive
-
-- unarchive:
-    src: '{{playbook_dir}}/tmp/zhdk_agw_auth.tar.gz'
+- name: copy service file
+  copy:
+    src: '{{playbook_dir}}/../{{item}}'
     dest: '{{app_dir}}'
     owner: '{{app_user}}'
-  name: extract archive
-
+    mode: 'preserve'
+  with_items:
+    - zhdk-agw-auth-system.rb
+    - Gemfile
+    - Gemfile.lock
+    - .tool-versions

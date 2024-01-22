@@ -12,7 +12,7 @@ Deploy
 
 For the following scripts:
 
-* the ZHdK leihs-inventory must be reachable via `../leihs/zhdk-inventory` from this directory
+* the ZHdK madek-inventory must be reachable via `../madek/zhdk-inventory` from this directory
 * a python 3.x version must be in the path as `python3`
 
 ### Prepared deploy scripts
@@ -25,5 +25,5 @@ For the following scripts:
 ### Manual example
 
     source ./tmp/py-venv/bin/activate
-    ansible-playbook -i ../../zhdk-inventory/staging-hosts deploy_play.yml -l zhdk-leihs-staging
+    ansible-playbook -i ../../zhdk-inventory/staging-hosts deploy_play.yml -l zhdk-madek-staging
 

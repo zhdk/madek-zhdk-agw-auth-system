@@ -1,0 +1,36 @@
+- name: create the asdf data directory
+  file:
+    path: '/home/{{asdf_user}}/.asdf'
+    state: directory
+    owner: '{{asdf_user}}'
+    group: '{{asdf_user}}'
+
+- name: create the asdf plugin directory
+  file:
+    path: '/home/{{asdf_user}}/.asdf/plugins'
+    state: directory
+    owner: '{{asdf_user}}'
+    group: '{{asdf_user}}'
+
+- name: copy and unpack release
+  unarchive:
+    src: https://github.com/asdf-vm/asdf/archive/refs/tags/v{{asdf_version}}.tar.gz
+    remote_src: yes
+    dest: '/home/{{asdf_user}}/.asdf'
+    owner: root
+    group: '{{asdf_user}}'
+
+- name: set link
+  file:
+    src: "{{asdf_dir}}"
+    dest: "{{asdf_root_dir}}/current"
+    state: link
+
+- name: set bash env for asdf
+  blockinfile:
+    path: /home/{{asdf_user}}/.bashrc
+    owner: '{{asdf_user}}'
+    group: '{{asdf_user}}'
+    block: |
+      source {{asdf_root_dir}}/current/asdf.sh
+      source {{asdf_root_dir}}/current/completions/asdf.bash
