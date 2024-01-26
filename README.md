@@ -1,4 +1,10 @@
 
+ZHdK AGW Authentication for https://medienarchiv.zhdk.ch/
+=========================================================
+
+This is project is taken and adjusted from https://github.com/zhdk/leihs-zhdk-agw-auth-system.
+
+
 
 Links
 -----
