@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+
+PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd .. > /dev/null 2>&1 && pwd -P)"
+MADEK_DIR="$(cd -- "$PROJECT_DIR" ; cd .. > /dev/null 2>&1 && pwd -P)"
+MADEK_DEPLOY_DIR="$(cd -- "$MADEK_DIR" ; cd deploy > /dev/null 2>&1 && pwd -P)"
+MADEK_INVENTORY_DIR="$(cd -- "$MADEK_DIR" ; cd deploy/inventories/zhdk > /dev/null 2>&1 && pwd -P)"
+
+
+$MADEK_DEPLOY_DIR/bin/ansible-playbook \
+  -i $MADEK_INVENTORY_DIR/hosts_medienarchiv -l medienarchiv \
+  $PROJECT_DIR/deploy/deploy_play.yml -e 'madek_auth_name=zhdk-agw' "$@"
+
+
+# vi: ft=sh
