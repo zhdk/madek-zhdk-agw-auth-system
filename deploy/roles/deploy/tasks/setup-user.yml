@@ -1,4 +1,5 @@
-- user:
+- name: create user
+  user:
     name: '{{app_user}}'
     system: yes
-  name: create {{app_user}} user
+  

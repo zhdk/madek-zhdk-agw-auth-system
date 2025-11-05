@@ -2,3 +2,4 @@
 /py-venv
 /tmp
 deploy/deploy_play.retry
+.vscode/

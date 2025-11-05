@@ -1,0 +1,26 @@
+[Unit]
+Description={{app_name}} Service
+After=syslog.target
+
+[Service]
+Restart=always
+RuntimeMaxSec=86400
+RestartSec=3s
+WorkingDirectory={{app_dir}}
+User={{app_user}}
+Group={{app_user}}
+
+Environment=PATH=/home/{{app_user}}/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=APP_ENV=production
+Environment=GEM_HOME=/home/{{app_user}}/.local/share/gem
+Environment=GEM_PATH=/home/{{app_user}}/.local/share/gem
+ExecStart=/usr/bin/ruby -S \
+  bundle exec ruby zhdk-agw-auth-system.rb \
+  -c /etc/madek/{{app_name}}_config.yml
+
+
+[Install]
+WantedBy=multi-user.target
+
+
+# vi: ft=sh

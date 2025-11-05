@@ -1,0 +1,81 @@
+---
+# Tasks for removing asdf and cleaning up related files
+
+- name: stop application service before asdf removal
+  systemd:
+    name: '{{app_name}}'
+    state: stopped
+  ignore_errors: yes
+
+- name: remove asdf environment variables from .bashrc
+  blockinfile:
+    path: /home/{{asdf_user}}/.bashrc
+    owner: '{{asdf_user}}'
+    group: '{{asdf_user}}'
+    block: |
+      source {{asdf_root_dir}}/current/asdf.sh
+      source {{asdf_root_dir}}/current/completions/asdf.bash
+    state: absent
+  become: yes
+
+- name: remove asdf directory
+  file:
+    path: '/home/{{asdf_user}}/.asdf'
+    state: absent
+  become: yes
+
+- name: remove asdf symlink if it exists
+  file:
+    path: "{{asdf_root_dir}}/current"
+    state: absent
+  become: yes
+
+- name: check for asdf references in other shell config files
+  find:
+    paths:
+      - '/home/{{asdf_user}}'
+    patterns:
+      - '.profile'
+      - '.bash_profile'
+      - '.zshrc'
+    contains: 'asdf'
+  register: asdf_shell_configs
+  become: yes
+  become_user: '{{asdf_user}}'
+
+- name: warn about manual cleanup needed for shell configs
+  debug:
+    msg: "Found asdf references in: {{ item.path }}. Manual cleanup may be required."
+  loop: "{{ asdf_shell_configs.files }}"
+  when: asdf_shell_configs.files is defined and asdf_shell_configs.files|length > 0
+
+- name: remove any global asdf configuration
+  file:
+    path: '/home/{{asdf_user}}/.asdfrc'
+    state: absent
+  become: yes
+
+- name: remove asdf tool-versions file from app directory
+  file:
+    path: '{{app_dir}}/.tool-versions'
+    state: absent
+  become: yes
+
+- name: clean up any remaining asdf cache or tmp files
+  shell: |
+    rm -rf /tmp/asdf-*
+    rm -rf /home/{{asdf_user}}/.cache/asdf 2>/dev/null || true
+  become: yes
+  ignore_errors: yes
+
+- name: verify asdf removal
+  shell: |
+    which asdf || echo "asdf not found - removal successful"
+  register: asdf_check
+  become: yes
+  become_user: '{{asdf_user}}'
+  ignore_errors: yes
+
+- name: display asdf removal status
+  debug:
+    msg: "{{ asdf_check.stdout }}"

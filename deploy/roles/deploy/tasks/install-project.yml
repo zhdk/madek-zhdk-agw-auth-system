@@ -1,4 +1,10 @@
-- name: remove existing {{app_dir}}
+- name: remove possibly exisiting archive
+  file:
+    path: '{{playbook_dir}}/tmp/{{app_name}}.tar.gz'
+    state: absent
+  delegate_to: localhost
+
+- name: clean/remove existing application dir {{app_dir}}
   file:
     path: '{{app_dir}}'
     state: absent
@@ -10,9 +16,9 @@
     owner: '{{app_user}}'
     recurse: yes
 
-- name: copy service file
+- name: copy service files
   copy:
-    src: '{{playbook_dir}}/../{{item}}'
+    src: '{{role_path}}/../../../{{item}}'
     dest: '{{app_dir}}'
     owner: '{{app_user}}'
     mode: 'preserve'

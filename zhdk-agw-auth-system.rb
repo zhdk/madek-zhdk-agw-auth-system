@@ -10,7 +10,7 @@ require 'yaml'
 require 'logger'
 
 $logger = Logger.new(STDOUT)
-$logger.level = Logger::DEBUG
+$logger.level = Logger::Severity::INFO
 $logger.formatter = proc do |severity, datetime, progname, msg|
   "#{datetime.strftime('%Y-%m-%d %H:%M:%S')} - #{severity}: #{msg}\n\n"
 end
@@ -50,10 +50,46 @@ $logger.info($config)
 
 class AuthenticatorApp <  Sinatra::Base
 
-  set :environment, :development
+  set :environment, :production
+
+  set :logging, true
+
+  set :logger, $logger
+
+  # set :host_authorization, { permitted_hosts: [] }
+
 
   get '/zhdk-agw/status' do
     'OK'
+  end
+
+  get '/zhdk-agw/info' do
+    return "Switch to development mode for detailed info" if ENV['RACK_ENV'] != 'development'
+    content_type :html
+      <<-HTML.strip_heredoc
+        <html>
+        <head>
+          <title>Environment Variables</title>
+          <style>
+          table { border-collapse: collapse; width: 100%; }
+          th, td { border: 1px solid black; padding: 8px; text-align: left; }
+          th { background-color: #f2f2f2; }
+          </style>
+        </head>
+        <body>
+          <h1>Environment Variables</h1>
+          <table>
+          <tr>
+            <th>Key</th>
+            <th>Value</th>
+          </tr>
+          #{ENV.map { |k, v| "<tr><td>#{CGI.escapeHTML(k)}</td><td>#{CGI.escapeHTML(v)}</td></tr>" }.join("\n            ")}
+          </table>
+          <h2>Request Info</h2>
+          <pre>#{CGI.escapeHTML(request.env.map { |k, v| "#{k}: #{v}" }.join("\n"))}</pre>
+        </body>
+        </html>
+      HTML
   end
 
 
@@ -62,6 +98,9 @@ class AuthenticatorApp <  Sinatra::Base
   def expired_message sign_in_request_token
     sign_in_request = JWT.decode sign_in_request_token,
       $config[:madek_public_key], false, { algorithm: 'ES256' }
+
+    $logger.warn "Expired token: #{sign_in_request}"
+    $logger.warn "Request env: #{request.env}"
 
     <<-HTML.strip_heredoc
         <html>
@@ -206,5 +245,6 @@ end
 ################################################################################
 
 AuthenticatorApp.port = $config[:my_port]
+AuthenticatorApp.bind = 'localhost'
 
 AuthenticatorApp.run!

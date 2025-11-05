@@ -24,7 +24,6 @@ For the following scripts:
 ### Prepared deploy scripts
 
     ./bin/deploy2staging
-
     ./bin/deploy2test
 
 
@@ -33,3 +32,12 @@ For the following scripts:
     source ./tmp/py-venv/bin/activate
     ansible-playbook -i ../../zhdk-inventory/staging-hosts deploy_play.yml -l zhdk-madek-staging
 
+
+
+## Notes 
+
+### Hosts not allowed Problem
+
+* https://github.com/sinatra/sinatra/pull/2053
+* https://github.com/sinatra/sinatra/pull/2053/files/8466a9ea462c1a5bc46b151e02fb108f048bc8dd#diff-026d81b9fb9515bb82e62b71e99f40d18c9a1dca495473e0c132d00e7e1b1265
+* https://github.com/sinatra/sinatra/issues/2065#issuecomment-2484285707

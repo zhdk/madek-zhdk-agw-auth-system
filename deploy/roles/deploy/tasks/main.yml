@@ -1,10 +1,7 @@
-- import_tasks: setup-user.yml
-  tags: user
-- import_tasks: asdf-install.yml
-  tags: asdf
-- import_tasks: install-project.yml
-  tags: project
-- import_tasks: install-ruby.yml
-  tags: ruby
-- import_tasks: service.yml
-  tags: service
+- include_tasks: setup-user.yml
+# - include_tasks: asdf-install.yml
+- include_tasks: asdf-remove.yml
+- include_tasks: install-project.yml
+# - include_tasks: install-ruby.yml
+- include_tasks: install-ruby-system.yml
+- include_tasks: service.yml

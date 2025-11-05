@@ -5,7 +5,6 @@ app_dir: /{{app_name}}
 app_user: '{{app_name}}'
 config_file: '/etc/madek/{{madek_auth_name}}_config.yml'
 asdf_user: '{{app_user}}'
-asdf_version: 0.14.0
 asdf_root_dir: /home/{{asdf_user}}/.asdf
 asdf_dir: "{{asdf_root_dir}}/asdf-{{asdf_version}}"
 ruby_dir: "/home/{{app_user}}/.asdf/installs/ruby/{{ruby_version.stdout}}"

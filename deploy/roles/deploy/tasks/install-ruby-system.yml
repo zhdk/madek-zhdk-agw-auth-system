@@ -1,0 +1,39 @@
+---
+# Alternative Ruby installation using Debian system packages
+
+- name: install system ruby and dependencies
+  apt:
+    name:
+      - ruby
+      - ruby-dev
+      - ruby-bundler
+      - build-essential
+      - libssl-dev
+      - zlib1g-dev
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: configure bundler for user-level gem installation
+  shell: |
+    bundle config set --global path '~/.local/share/gem'
+    bundle config set --global bin '~/.local/bin'
+  become: yes
+  become_user: '{{app_user}}'
+
+- name: ensure local bin directory is in PATH
+  lineinfile:
+    path: "~{{app_user}}/.bashrc"
+    line: 'export PATH="$HOME/.local/bin:$PATH"'
+    create: yes
+  become: yes
+  become_user: '{{app_user}}'
+
+- name: install ruby gems for application
+  shell: |
+    cd {{app_dir}}
+    bundle install --deployment --without development test
+  become: yes
+  become_user: '{{app_user}}'
+  environment:
+    PATH: "{{ ansible_env.PATH }}:~{{app_user}}/.local/bin"
